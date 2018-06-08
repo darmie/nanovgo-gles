@@ -7,11 +7,11 @@ import (
 type nvgParams interface {
 	edgeAntiAlias() bool
 	renderCreate() error
-	renderCreateTexture(texType nvgTextureType, w, h int, flags ImageFlags, data []byte) int
-	renderDeleteTexture(image int) error
-	renderUpdateTexture(image, x, y, w, h int, data []byte) error
-	renderGetTextureSize(image int) (int, int, error)
-	renderViewport(width, height int)
+	renderCreateTexture(texType nvgTextureType, w, h int32, flags ImageFlags, data []byte) int32
+	renderDeleteTexture(image int32) error
+	renderUpdateTexture(image, x, y, w, h int32, data []byte) error
+	renderGetTextureSize(image int32) (int32, int32, error)
+	renderViewport(width, height int32)
 	renderCancel()
 	renderFlush()
 	renderFill(paint *Paint, scissor *nvgScissor, fringe float32, bounds [4]float32, paths []nvgPath)

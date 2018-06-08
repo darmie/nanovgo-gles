@@ -1,6 +1,8 @@
 package nanovgo
 
 import (
+	"bytes"
+	"encoding/binary"
 	"math"
 )
 
@@ -424,7 +426,7 @@ func roundCapEnd(dst []nvgVertex, index int, p *nvgPoint, dx, dy, w float32, nCa
 	return index
 }
 
-func nearestPow2(num int) int {
+func nearestPow2(num int32) int32 {
 	var n uint
 	uNum := uint(num)
 	if uNum > 0 {
@@ -438,9 +440,15 @@ func nearestPow2(num int) int {
 	n |= n >> 8
 	n |= n >> 16
 	n++
-	return int(num)
+	return int32(num)
 }
 
 func quantize(a, d float32) float32 {
 	return float32(int(a/d+0.5)) * d
+}
+
+func readUint32(data []byte) (ret *uint32) {
+	buf := bytes.NewBuffer(data)
+	binary.Read(buf, binary.LittleEndian, ret)
+	return
 }

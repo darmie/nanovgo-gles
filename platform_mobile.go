@@ -1,5 +1,6 @@
 // +build darwin linux
-// +build arm arm64
+// +build arm arm64 armv7
+// +build android
 
 package nanovgo
 
@@ -16,7 +17,7 @@ var shaderHeader string = `
 #define UNIFORMARRAY_SIZE 11
 `
 
-func prepareTextureBuffer(data []byte, w, h, bpp int) []byte {
+func prepareTextureBuffer(data []byte, w, h, bpp int32) []byte {
 	return data
 }
 

@@ -1,9 +1,5 @@
 package nanovgo
 
-import (
-	"github.com/goxjs/gl"
-)
-
 const (
 	nsvgShaderFILLGRAD = iota
 	nsvgShaderFILLIMG
@@ -24,19 +20,19 @@ const (
 
 type glCall struct {
 	callType       glnvgCallType
-	image          int
-	pathOffset     int
-	pathCount      int
-	triangleOffset int
-	triangleCount  int
-	uniformOffset  int
+	image          int32
+	pathOffset     int32
+	pathCount      int32
+	triangleOffset int32
+	triangleCount  int32
+	uniformOffset  int32
 }
 
 type glPath struct {
-	fillOffset   int
-	fillCount    int
-	strokeOffset int
-	strokeCount  int
+	fillOffset   int32
+	fillCount    int32
+	strokeOffset int32
+	strokeCount  int32
 }
 
 type glFragUniforms [44]float32
@@ -108,9 +104,9 @@ func (u *glFragUniforms) setType(typeCode float32) {
 }
 
 type glTexture struct {
-	id            int
-	tex           gl.Texture
-	width, height int
+	id            int32
+	tex           uint32 //gl.Texture
+	width, height int32
 	texType       nvgTextureType
 	flags         ImageFlags
 }

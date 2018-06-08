@@ -2,12 +2,13 @@ package nanovgo
 
 import (
 	"bytes"
-	"github.com/shibukawa/nanovgo/fontstashmini"
 	"image"
 	_ "image/jpeg" // to read jpeg
 	_ "image/png"  // to read png
 	"log"
 	"os"
+
+	"github.com/shibukawa/nanovgo/fontstashmini"
 )
 
 // Context is an entry point object to use NanoVGo API and created by NewContext() function.
@@ -116,12 +117,12 @@ type Context struct {
 	fringeWidth    float32
 	devicePxRatio  float32
 	fs             *fontstashmini.FontStash
-	fontImages     []int
-	fontImageIdx   int
-	drawCallCount  int
-	fillTriCount   int
-	strokeTriCount int
-	textTriCount   int
+	fontImages     []int32
+	fontImageIdx   int32
+	drawCallCount  int32
+	fillTriCount   int32
+	strokeTriCount int32
+	textTriCount   int32
 }
 
 // Delete is called when tearing down NanoVGo context
@@ -144,7 +145,7 @@ func (c *Context) Delete() {
 // For example, GLFW returns two dimension for an opened window: window size and
 // frame buffer size. In that case you would set windowWidth/Height to the window size
 // devicePixelRatio to: frameBufferWidth / windowWidth.
-func (c *Context) BeginFrame(windowWidth, windowHeight int, devicePixelRatio float32) {
+func (c *Context) BeginFrame(windowWidth, windowHeight int32, devicePixelRatio float32) {
 	c.states = c.states[:0]
 	c.Save()
 	c.Reset()
@@ -173,7 +174,7 @@ func (c *Context) EndFrame() {
 		}
 		iw, ih, _ := c.ImageSize(fontImage)
 		j := 0
-		for i := 0; i < c.fontImageIdx; i++ {
+		for i := 0; int32(i) < c.fontImageIdx; i++ {
 			nw, nh, _ := c.ImageSize(c.fontImages[i])
 			if nw < iw || nh < ih {
 				c.DeleteImage(c.fontImages[i])
@@ -369,7 +370,7 @@ func (c *Context) SetFillPaint(paint Paint) {
 
 // CreateImage creates image by loading it from the disk from specified file name.
 // Returns handle to the image.
-func (c *Context) CreateImage(filePath string, flags ImageFlags) int {
+func (c *Context) CreateImage(filePath string, flags ImageFlags) int32 {
 	file, err := os.Open(filePath)
 	defer file.Close()
 	if err != nil {
@@ -384,7 +385,7 @@ func (c *Context) CreateImage(filePath string, flags ImageFlags) int {
 
 // CreateImageFromMemory creates image by loading it from the specified chunk of memory.
 // Returns handle to the image.
-func (c *Context) CreateImageFromMemory(flags ImageFlags, data []byte) int {
+func (c *Context) CreateImageFromMemory(flags ImageFlags, data []byte) int32 {
 	reader := bytes.NewReader(data)
 	img, _, err := image.Decode(reader)
 	if err != nil {
@@ -395,12 +396,12 @@ func (c *Context) CreateImageFromMemory(flags ImageFlags, data []byte) int {
 
 // CreateImageFromGoImage creates image by loading it from the specified image.Image object.
 // Returns handle to the image.
-func (c *Context) CreateImageFromGoImage(imageFlag ImageFlags, img image.Image) int {
+func (c *Context) CreateImageFromGoImage(imageFlag ImageFlags, img image.Image) int32 {
 	bounds := img.Bounds()
 	size := bounds.Size()
 	rgba, ok := img.(*image.RGBA)
 	if ok {
-		return c.CreateImageRGBA(size.X, size.Y, imageFlag, rgba.Pix)
+		return c.CreateImageRGBA(int32(size.X), int32(size.Y), imageFlag, rgba.Pix)
 	}
 	rgba = image.NewRGBA(bounds)
 	for x := 0; x < size.X; x++ {
@@ -408,17 +409,17 @@ func (c *Context) CreateImageFromGoImage(imageFlag ImageFlags, img image.Image) 
 			rgba.Set(x, y, img.At(x, y))
 		}
 	}
-	return c.CreateImageRGBA(size.X, size.Y, imageFlag, rgba.Pix)
+	return c.CreateImageRGBA(int32(size.X), int32(size.Y), imageFlag, rgba.Pix)
 }
 
 // CreateImageRGBA creates image from specified image data.
 // Returns handle to the image.
-func (c *Context) CreateImageRGBA(w, h int, imageFlags ImageFlags, data []byte) int {
+func (c *Context) CreateImageRGBA(w, h int32, imageFlags ImageFlags, data []byte) int32 {
 	return c.params.renderCreateTexture(nvgTextureRGBA, w, h, imageFlags, data)
 }
 
 // UpdateImage updates image data specified by image handle.
-func (c *Context) UpdateImage(img int, data []byte) error {
+func (c *Context) UpdateImage(img int32, data []byte) error {
 	w, h, err := c.params.renderGetTextureSize(img)
 	if err != nil {
 		return err
@@ -427,12 +428,12 @@ func (c *Context) UpdateImage(img int, data []byte) error {
 }
 
 // ImageSize returns the dimensions of a created image.
-func (c *Context) ImageSize(img int) (int, int, error) {
+func (c *Context) ImageSize(img int32) (int32, int32, error) {
 	return c.params.renderGetTextureSize(img)
 }
 
 // DeleteImage deletes created image.
-func (c *Context) DeleteImage(img int) {
+func (c *Context) DeleteImage(img int32) {
 	c.params.renderDeleteTexture(img)
 }
 
@@ -725,8 +726,8 @@ func (c *Context) Fill() {
 	// Count triangles
 	for i := 0; i < len(c.cache.paths); i++ {
 		path := &c.cache.paths[i]
-		c.fillTriCount += len(path.fills) - 2
-		c.strokeTriCount += len(path.strokes) - 2
+		c.fillTriCount += int32(len(path.fills) - 2)
+		c.strokeTriCount += int32(len(path.strokes) - 2)
 		c.drawCallCount += 2
 	}
 }
@@ -767,7 +768,7 @@ func (c *Context) Stroke() {
 	// Count triangles
 	for i := 0; i < len(c.cache.paths); i++ {
 		path := &c.cache.paths[i]
-		c.strokeTriCount += len(path.strokes) - 2
+		c.strokeTriCount += int32(len(path.strokes) - 2)
 		c.drawCallCount += 2
 	}
 }
@@ -1346,7 +1347,7 @@ func createInternal(params nvgParams) (*Context, error) {
 	context := &Context{
 		params:     params,
 		states:     make([]nvgState, 0, nvgMaxStates),
-		fontImages: make([]int, nvgMaxFontImages),
+		fontImages: make([]int32, nvgMaxFontImages),
 		commands:   make([]float32, 0, nvgInitCommandsSize),
 		cache: nvgPathCache{
 			points:   make([]nvgPoint, 0, nvgInitPointsSize),
@@ -1499,10 +1500,10 @@ func (c *Context) flushTextTexture() {
 		// Update texture
 		if fontImage != 0 {
 			data, _, _ := c.fs.GetTextureData()
-			x := dirty[0]
-			y := dirty[1]
-			w := dirty[2] - x
-			h := dirty[3] - y
+			x := int32(dirty[0])
+			y := int32(dirty[1])
+			w := int32(dirty[2]) - x
+			h := int32(dirty[3]) - y
 			c.params.renderUpdateTexture(fontImage, x, y, w, h, data)
 		}
 	}
@@ -1513,7 +1514,7 @@ func (c *Context) allocTextAtlas() bool {
 	if c.fontImageIdx >= nvgMaxFontImages-1 {
 		return false
 	}
-	var iw, ih int
+	var iw, ih int32
 	// if next fontImage already have a texture
 	if c.fontImages[c.fontImageIdx+1] != 0 {
 		iw, ih, _ = c.ImageSize(c.fontImages[c.fontImageIdx+1])
@@ -1524,14 +1525,14 @@ func (c *Context) allocTextAtlas() bool {
 		} else {
 			iw *= 2
 		}
-		if iw > nvgMaxFontImageSize || ih > nvgMaxFontImageSize {
-			iw = nvgMaxFontImageSize
-			ih = nvgMaxFontImageSize
+		if iw > int32(nvgMaxFontImageSize) || ih > int32(nvgMaxFontImageSize) {
+			iw = int32(nvgMaxFontImageSize)
+			ih = int32(nvgMaxFontImageSize)
 		}
 		c.fontImages[c.fontImageIdx+1] = c.params.renderCreateTexture(nvgTextureALPHA, iw, ih, 0, nil)
 	}
 	c.fontImageIdx++
-	c.fs.ResetAtlas(iw, ih)
+	c.fs.ResetAtlas(int(iw), int(ih))
 	return true
 }
 
@@ -1549,5 +1550,5 @@ func (c *Context) renderText(vertexes []nvgVertex) {
 	c.params.renderTriangleStrip(&paint, &state.scissor, vertexes)
 
 	c.drawCallCount++
-	c.textTriCount += len(vertexes) / 3
+	c.textTriCount += int32(len(vertexes) / 3)
 }

@@ -13,7 +13,7 @@ type Paint struct {
 	feather    float32
 	innerColor Color
 	outerColor Color
-	image      int
+	image      int32
 }
 
 func (p *Paint) setPaintColor(color Color) {
@@ -89,7 +89,7 @@ func BoxGradient(x, y, w, h, r, f float32, iColor, oColor Color) Paint {
 // ImagePattern creates and returns an image patter. Parameters (ox,oy) specify the left-top location of the image pattern,
 // (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to Context.FillPaint() or Context.StrokePaint().
-func ImagePattern(cx, cy, w, h, angle float32, img int, alpha float32) Paint {
+func ImagePattern(cx, cy, w, h, angle float32, img int32, alpha float32) Paint {
 	xform := RotateMatrix(angle)
 	xform[4] = cx
 	xform[5] = cy
